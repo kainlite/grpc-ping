@@ -17,9 +17,9 @@ const (
 type server struct{}
 
 // Ping implements ping.PingServer
-func (s *server) Ping(ctx context.Context, in *pb.PingRequest) (*pb.PingReply, error) {
+func (s *server) Ping(ctx context.Context, in *pb.PingRequest) (*pb.PingResponse, error) {
 	log.Printf("Received: %v", in.Data)
-	return &pb.PingReply{Message: "Data: " + in.Data}, nil
+	return &pb.PingResponse{Data: "Data: " + in.Data}, nil
 }
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterPingServer(s, &server{})
+	pb.RegisterPingServiceServer(s, &server{})
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

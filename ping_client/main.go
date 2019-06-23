@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	address     = "localhost:50000"
+	address     = "192.168.1.254:50000"
 	defaultData = "Random data"
 )
 
@@ -22,19 +22,26 @@ func main() {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
-	c := pb.NewPingClient(conn)
+	c := pb.NewPingServiceClient(conn)
 
 	// Contact the server and print out its response.
-	data := defaultName
-	if len(os.Args) > 2 {
-		address = os.Args[1]
-		data = os.Args[2]
+	data := defaultData
+	if len(os.Args) > 1 {
+		// address = os.Args[1]
+		data = os.Args[1]
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	r, err := c.Ping(ctx, &pb.PingRequest{Data: data})
-	if err != nil {
-		log.Fatalf("could not connect to: %v", err)
+
+	index := 0
+	for {
+		trip_time := time.Now()
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		r, err := c.Ping(ctx, &pb.PingRequest{Data: data})
+		if err != nil {
+			log.Fatalf("could not connect to: %v", err)
+		}
+
+		log.Printf("%d characters from (%s): seq=%d time=%s", len(r.Data), address, index, time.Since(trip_time))
+		index++
 	}
-	log.Printf("Response: %s", r.Message)
 }
