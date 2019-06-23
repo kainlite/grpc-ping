@@ -11,25 +11,24 @@ import (
 )
 
 const (
-	address     = "192.168.1.254:50000"
-	defaultData = "Random data"
+	defaultAddress = "localhost:50000"
+	defaultData    = "00"
 )
 
 func main() {
-	// Set up a connection to the server.
+	data := defaultData
+	address := defaultAddress
+	if len(os.Args) > 2 {
+		address = os.Args[1]
+		data = os.Args[2]
+	}
+
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewPingServiceClient(conn)
-
-	// Contact the server and print out its response.
-	data := defaultData
-	if len(os.Args) > 1 {
-		// address = os.Args[1]
-		data = os.Args[1]
-	}
 
 	index := 0
 	for {
@@ -41,7 +40,8 @@ func main() {
 			log.Fatalf("could not connect to: %v", err)
 		}
 
-		log.Printf("%d characters from (%s): seq=%d time=%s", len(r.Data), address, index, time.Since(trip_time))
+		log.Printf("%d characters roundtrip to (%s): seq=%d time=%s", len(r.Data), address, index, time.Since(trip_time))
+		time.Sleep(1 * time.Second)
 		index++
 	}
 }
